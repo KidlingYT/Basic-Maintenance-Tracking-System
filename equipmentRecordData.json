@@ -1,0 +1,22 @@
+[
+    {
+      "id": 1,
+      "name": "Excavator",
+      "location": "Warehouse A",
+      "department": "Machining",
+      "model": "EX-200",
+      "serialNumber": "EX200-12345",
+      "installDate": "2020-01-15",
+      "status": "Operational"
+    },
+    {
+      "id": 2,
+      "name": "Bulldozer",
+      "location": "Construction Site",
+      "department": "Assembly",
+      "model": "BD-150",
+      "serialNumber": "BD150-67890",
+      "installDate": "2018-05-20",
+      "status": "Maintenance"
+    }
+]

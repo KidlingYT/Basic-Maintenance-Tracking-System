@@ -1,3 +1,4 @@
+"use client";
 import SideBarLinks from "@/components/SideBarLinks";
 import { EquipmentRecordTable } from "@/components/tables/EquipmentRecordTable";
 

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -11,22 +11,30 @@ import {
 import { MaintenanceRecord } from '@/app/interfaces/maintenance_record';
 
 export function MaintenanceTable() {
+  const [isLoading, setIsLoading] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [data, setData] = useState<MaintenanceRecord[]>([]);
+  // Fetch data from the API
+   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/maintenance');
+        if (!response.ok) {
+          throw new Error('Failed to fetch data');
+        }
+        const result = await response.json();
+        setData(result);
+      } catch (error) {
+        // setError((error as Error).message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  // Sample data
-  const data = React.useMemo<MaintenanceRecord[]>(() => [
-      { id: '1', equipmentId: 'Excavator', date: new Date('11-12-19'), type: 'Emergency', technician: 'eli', hoursSpent: 12, description: 'wow', partsReplaced: [], priority: 'High', completionStatus: 'Complete'},
-      { id: '1', equipmentId: 'Excavator', date: new Date('11-14-19'), type: 'Emergency', technician: 'eli', hoursSpent: 12, description: 'wow', partsReplaced: [], priority: 'High', completionStatus: 'Complete'},
-      { id: '1', equipmentId: 'Excavator', date: new Date('11-12-19'), type: 'Emergency', technician: 'eli', hoursSpent: 12, description: 'wow', partsReplaced: [], priority: 'High', completionStatus: 'Complete'},
-      { id: '1', equipmentId: 'Excavator', date: new Date('11-13-19'), type: 'Emergency', technician: 'eli', hoursSpent: 12, description: 'wow', partsReplaced: [], priority: 'High', completionStatus: 'Complete'},
-      { id: '1', equipmentId: 'Excavator', date: new Date('11-12-20'), type: 'Emergency', technician: 'eli', hoursSpent: 12, description: 'wow', partsReplaced: [], priority: 'High', completionStatus: 'Complete'},
-      { id: '1', equipmentId: 'Excavator', date: new Date('10-12-19'), type: 'Emergency', technician: 'eli', hoursSpent: 12, description: 'wow', partsReplaced: [], priority: 'High', completionStatus: 'Complete'},
-      { id: '1', equipmentId: 'Excavator', date: new Date('12-12-19'), type: 'Emergency', technician: 'eli', hoursSpent: 12, description: 'wow', partsReplaced: [], priority: 'High', completionStatus: 'Complete'},
-      { id: '1', equipmentId: 'Excavator', date: new Date('1-12-19'), type: 'Emergency', technician: 'eli', hoursSpent: 12, description: 'wow', partsReplaced: [], priority: 'High', completionStatus: 'Complete'},
-      { id: '1', equipmentId: 'Excavator', date: new Date('11-12-1'), type: 'Emergency', technician: 'eli', hoursSpent: 12, description: 'wow', partsReplaced: [], priority: 'High', completionStatus: 'Complete'},
-    ], []
-  );
-
+    fetchData();
+  }, []);
+  
   // Define columns
   const columns = React.useMemo<ColumnDef<typeof data[0]>[]>(
     () => [
@@ -81,6 +89,16 @@ export function MaintenanceTable() {
     getSortedRowModel: getSortedRowModel(),
   });
 
+  if (isLoading) {
+    return (
+      <div>
+        <div className="animate-spin inline-block size-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full dark:text-blue-500" role="status" aria-label="loading">
+          <span className="sr-only">Loading...</span>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <table className='border-solid border-white border-2'>
       <thead className='border-bottom border-blue border-2'>
@@ -90,7 +108,7 @@ export function MaintenanceTable() {
               <th
                 key={header.id}
                 onClick={header.column.getToggleSortingHandler()}
-                className='p-2 cursor-pointer bg-white text-black'
+                className='p-1 cursor-pointer bg-white text-black'
               >
                 {flexRender(header.column.columnDef.header, header.getContext())}
                 {{
@@ -106,7 +124,7 @@ export function MaintenanceTable() {
         {table.getRowModel().rows.map((row) => (
           <tr key={row.id} className={`divide-x divide-blue-200 p-2`}>
             {row.getVisibleCells().map((cell) => (
-              <td key={cell.id} className='p-2'>
+              <td key={cell.id} className='p-1'>
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
               </td>
             ))}

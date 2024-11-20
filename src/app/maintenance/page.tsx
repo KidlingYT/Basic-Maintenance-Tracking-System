@@ -1,3 +1,4 @@
+"use client";
 import SideBarLinks from "@/components/SideBarLinks";
 import { MaintenanceTable } from "@/components/tables/MaintenanceTable";
 

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -11,18 +11,29 @@ import {
 import { Equipment } from '@/app/interfaces/equipment';
 
 export function EquipmentRecordTable() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [data, setData] = useState<Equipment[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
+  // Fetch data from the API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/equipment');
+        if (!response.ok) {
+          throw new Error('Failed to fetch data');
+        }
+        const result = await response.json();
+        setData(result);
+      } catch (error) {
+        // setError((error as Error).message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  // Sample data
-  const data = React.useMemo<Equipment[]>(() => [
-      { id: '1', name: 'Excavator', location: 'New York', department: 'Assembly', model: '4', serialNumber: '12er', installDate: new Date('11-21-11'), status: 'Down'},
-      { id: '2', name: 'Excavator', location: 'New York', department: 'Assembly', model: '4', serialNumber: '12erf', installDate: new Date('1-11-11'), status: 'Maintenance'},
-      { id: '3', name: 'Excavator', location: 'New York', department: 'Assembly', model: '4', serialNumber: '12ert', installDate: new Date('1-1-11'), status: 'Operational'},
-      { id: '4', name: 'Excavator', location: 'New York', department: 'Assembly', model: '4', serialNumber: '12erg', installDate: new Date('11-1-11'), status: 'Retired'},
-      { id: '5', name: 'Excavator', location: 'New York', department: 'Assembly', model: '4', serialNumber: '12erh', installDate: new Date('11-11-12'), status: 'Operational'},
-      { id: '6', name: 'Excavator', location: 'New York', department: 'Assembly', model: '4', serialNumber: '12erj', installDate: new Date('11-11-14'), status: 'Operational'},
-    ], []
-  );
+    fetchData();
+  }, []);
 
   // Define columns
   const columns = React.useMemo<ColumnDef<typeof data[0]>[]>(
@@ -73,6 +84,16 @@ export function EquipmentRecordTable() {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
+
+  if (isLoading) {
+    return (
+      <div>
+        <div className="animate-spin inline-block size-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full dark:text-blue-500" role="status" aria-label="loading">
+          <span className="sr-only">Loading...</span>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <table className='border-solid border-white border-2'>
