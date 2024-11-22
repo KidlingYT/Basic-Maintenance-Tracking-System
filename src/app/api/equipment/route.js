@@ -14,10 +14,20 @@ export async function GET() {
 
 export async function POST(req) {
   try {
+    // Read the existing data
+    const objectData = fs.readFileSync(dataPath, 'utf8');
+    // Get the data from the request body
     const newData = await req.json();
-    fs.writeFileSync(dataPath, JSON.stringify(newData, null, 2), 'utf8');
-    return new Response(JSON.stringify({ message: 'Data saved!' }), { status: 200 });
+    let arrayData = JSON.parse(objectData);
+    arrayData.push(newData);
+    // Convert the updated data to a JSON string
+    const updatedData = JSON.stringify(arrayData, null, 2);
+    fs.writeFileSync(dataPath, updatedData, 'utf8');
+    // Return a success response
+    return new Response(JSON.stringify({ message: 'Data stored successfully' }), { status: 200 });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to write data' }), { status: 500 });
+    console.error(error);
+    // Return an error response
+    return new Response(JSON.stringify({ message: 'Error storing data' }), { status: 500 });
   }
 }

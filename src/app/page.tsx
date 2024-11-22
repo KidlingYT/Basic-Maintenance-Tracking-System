@@ -1,8 +1,38 @@
 "use client";
-
-import EquipmentPieChart from "@/components/charts/EquipmentPieChart";
-import MaintenanceBarGraph from "@/components/charts/MaintenanceBarGraph";
-import RecentMaintenance from "@/components/RecentMaintenance";
+import dynamic from "next/dynamic";
+const MaintenanceBarGraph = dynamic(
+  () => import("@/components/charts/MaintenanceBarGraph"), 
+  {
+    loading: () => 
+  <div>
+    <div className="animate-spin inline-block size-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full dark:text-blue-500" role="status" aria-label="loading">
+      <span className="sr-only">Loading...</span>
+    </div>
+  </div>,
+  }
+);
+const EquipmentPieChart = dynamic(
+  () => import("@/components/charts/EquipmentPieChart"), 
+  {
+    loading: () => 
+  <div>
+    <div className="animate-spin inline-block size-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full dark:text-blue-500" role="status" aria-label="loading">
+      <span className="sr-only">Loading...</span>
+    </div>
+  </div>,
+  }
+);
+const RecentMaintenance = dynamic(
+  () => import("@/components/RecentMaintenance"), 
+  {
+    loading: () => 
+  <div>
+    <div className="animate-spin inline-block size-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full dark:text-blue-500" role="status" aria-label="loading">
+      <span className="sr-only">Loading...</span>
+    </div>
+  </div>,
+  }
+);
 import SideBarLinks from "@/components/SideBarLinks";
 
 export default function Home() {
@@ -10,15 +40,13 @@ export default function Home() {
     <div className="min-h-screen font-[family-name:var(--font-geist-sans)] flex flex-row bg-slate-800">
       <div className="flex-initial w-2/12 flex flex-col bg-slate-300">
         <h1 className='text-black text-center p-4 text-xl'>Dashboard</h1>
-        <SideBarLinks/>
+        <SideBarLinks page={'dashboard'}/>
       </div>
-      <main className="flex-shrink w-9/12 flex flex-row gap-8 row-start-2 items-center justify-center">
+      <main className="flex-shrink w-10/12 flex flex-row gap-8 row-start-2 items-center justify-center">
         <EquipmentPieChart/>
         <MaintenanceBarGraph/>
         <RecentMaintenance/>
       </main>
-      <footer className="row-start-3 w-1/12 flex gap-6 flex-wrap items-center justify-center">
-      </footer>
     </div>
   );
 }

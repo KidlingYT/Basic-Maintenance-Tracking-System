@@ -6,11 +6,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 const maintenanceRecordSchema = z.object({
   id: z.string().min(1, "ID is required").max(255),
   equipmentId: z.string().min(1, "Equipment ID is required").max(255),
-  date: z.date(),
+  date: z.date().refine((date) => date <= new Date(), {
+    message: 'Date must be in the past',
+    path: ['date'],
+  }),
   type: z.enum(["Preventive", "Repair", "Emergency"]),
-  technician: z.string().min(1, "Technician is required").max(255),
-  hoursSpent: z.number().min(0, "Hours spent must be positive"),
-  description: z.string().min(1, "Description is required").max(255),
+  technician: z.string().min(2, "Technician is required").max(255),
+  hoursSpent: z.number().min(0, "Hours spent must be positive").max(24, "Hours must be 24 or less"),
+  description: z.string().min(10, "Description is required").max(500),
   partsReplaced: z.array(z.string()).optional(),
   priority: z.enum(["Low", "Medium", "High"]),
   completionStatus: z.enum(["Complete", "Incomplete", "Pending Parts"]),
@@ -35,124 +38,134 @@ const MaintenanceRecordForm = ({ onClose }: { onClose: () => void }) => {
     name: "partsReplaced",
     rules: { required: false }
   });
-  const onSubmit: SubmitHandler<MaintenanceRecordFormData> = (data) => {
-    console.log(data);
+  const onSubmit: SubmitHandler<MaintenanceRecordFormData> = async (data) => {
+    onClose();
+    const response = await fetch('/api/maintenance', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
   };
 
   return (
-    <form
-      className="bg-slate-100 fixed inset-x-1/4 top-16 w-1/4 h-5/6 text-black p-10 flex flex-col overflow-auto"
-      onSubmit={handleSubmit(onSubmit)}
-    >
-      <button
-        onClick={onClose}
-        className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
-        aria-label="Close"
-        type="button"
+    <div className="z-0 fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 dark:bg-opacity-80 dark:bg-neutral-900 justify-center" onClick={onClose}>
+      <form
+        className="z-50 bg-slate-100 fixed inset-x-1/3 top-16 w-1/3 h-5/6 text-black p-10 flex flex-col overflow-auto align-center justify-center"
+        onSubmit={handleSubmit(onSubmit)}
+        onClick={(e) => e.stopPropagation()}
       >
-        ✖
-      </button>
-      <label className="p-2">
-        Id:
-        <input {...register("id")} className="border p-2 w-full" />
-        {errors.id && <p className="text-red-500">{errors.id.message}</p>}
-      </label>
-      <label className="p-2">
-        Equipment Id:
-        <input {...register("equipmentId")} className="border p-2 w-full" />
-        {errors.equipmentId && <p className="text-red-500">{errors.equipmentId.message}</p>}
-      </label>
-      <label className="p-2">
-        Date:
-        <input
-          type="date"
-          {...register("date", {
-            setValueAs: (value) => (value ? new Date(value) : undefined),
-          })}
-          className="border p-2 w-full"
-        />
-        {errors.date && <p className="text-red-500">Invalid date</p>}
-      </label>
-      <label className="p-2">
-        Type:
-        <select {...register("type")} className="border p-2 w-full">
-          <option value="Preventive">Preventive</option>
-          <option value="Repair">Repair</option>
-          <option value="Emergency">Emergency</option>
-        </select>
-        {errors.type && <p className="text-red-500">{errors.type.message}</p>}
-      </label>
-      <label className="p-2">
-        Technician:
-        <input {...register("technician")} className="border p-2 w-full" />
-        {errors.technician && <p className="text-red-500">{errors.technician.message}</p>}
-      </label>
-      <label className="p-2">
-        Hours Spent:
-        <input
-          type="number"
-          {...register("hoursSpent", { valueAsNumber: true })}
-          className="border p-2 w-full"
-        />
-        {errors.hoursSpent && <p className="text-red-500">{errors.hoursSpent.message}</p>}
-      </label>
-      <label className="p-2">
-        Description:
-        <input {...register("description")} className="border p-2 w-full" />
-        {errors.description && <p className="text-red-500">{errors.description.message}</p>}
-      </label>
-      <div>
-        <label className="p-2">
-        Parts Replaced (optional):
         <button
-            type="button"
-            className="bg-green-500 text-white px-2 py-1 ml-2"
-            onClick={() => append("")} // Add a new empty field
+          onClick={onClose}
+          className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
+          aria-label="Close"
+          type="button"
         >
-            Add Part
+          ✖
         </button>
+        <label className="p-2">
+          Id:
+          <input {...register("id")} className="border p-1 w-full" />
+          {errors.id && <p className="text-red-500">{errors.id.message}</p>}
         </label>
-        {fields.map((field, index) => (
-        <div key={field.id} className="flex items-center space-x-2 p-2">
-            <input
-            {...register(`partsReplaced.${index}` as const)} // Register each part field
-            className="border p-2 w-full"
-            />
-            <button
-            type="button"
-            className="bg-red-500 text-white px-2 py-1"
-            onClick={() => remove(index)} // Remove the field at this index
-            >
-            Remove
-            </button>
+        <label className="p-2">
+          Equipment Id:
+          <input {...register("equipmentId")} className="border p-1 w-full" />
+          {errors.equipmentId && <p className="text-red-500">{errors.equipmentId.message}</p>}
+        </label>
+        <label className="p-2">
+          Date:
+          <input
+            type="date"
+            {...register("date", {
+              setValueAs: (value) => (value ? new Date(value) : undefined),
+            })}
+            className="border p-1 w-full"
+          />
+          {errors.date && <p className="text-red-500">Date must be in the past</p>}
+        </label>
+        <label className="p-2">
+          Type:
+          <select {...register("type")} className="border p-1 w-full">
+            <option value="Preventive">Preventive</option>
+            <option value="Repair">Repair</option>
+            <option value="Emergency">Emergency</option>
+          </select>
+          {errors.type && <p className="text-red-500">{errors.type.message}</p>}
+        </label>
+        <label className="p-2">
+          Technician:
+          <input {...register("technician")} className="border p-1 w-full" />
+          {errors.technician && <p className="text-red-500">{errors.technician.message}</p>}
+        </label>
+        <label className="p-2">
+          Hours Spent:
+          <input
+            type="number"
+            {...register("hoursSpent", { valueAsNumber: true })}
+            className="border p-1 w-full"
+          />
+          {errors.hoursSpent && <p className="text-red-500">{errors.hoursSpent.message}</p>}
+        </label>
+        <label className="p-2">
+          Description:
+          <input {...register("description")} className="border p-1 w-full" />
+          {errors.description && <p className="text-red-500">{errors.description.message}</p>}
+        </label>
+        <div>
+          <label className="p-2">
+          Parts Replaced (optional):
+          <button
+              type="button"
+              className="bg-green-500 text-white px-2 py-1 ml-2"
+              onClick={() => append("")} // Add a new empty field
+          >
+              Add Part
+          </button>
+          </label>
+          {fields.map((field, index) => (
+          <div key={field.id} className="flex items-center space-x-2 p-2">
+              <input
+              {...register(`partsReplaced.${index}` as const)} // Register each part field
+              className="border p-2 w-full"
+              />
+              <button
+              type="button"
+              className="bg-red-500 text-white px-2 py-1"
+              onClick={() => remove(index)} // Remove the field at this index
+              >
+              Remove
+              </button>
+          </div>
+          ))}
+          {errors.partsReplaced && (
+          <p className="text-red-500">{errors.partsReplaced.message}</p>
+          )}
         </div>
-        ))}
-        {errors.partsReplaced && (
-        <p className="text-red-500">{errors.partsReplaced.message}</p>
-        )}
-      </div>
-      <label className="p-2">
-        Priority:
-        <select {...register("priority")} className="border p-2 w-full">
-          <option value="Low">Low</option>
-          <option value="Medium">Medium</option>
-          <option value="High">High</option>
-        </select>
-        {errors.priority && <p className="text-red-500">{errors.priority.message}</p>}
-      </label>
-      <label className="p-2">
-        Completion Status:
-        <select {...register("completionStatus")} className="border p-2 w-full">
-          <option value="Complete">Complete</option>
-          <option value="Incomplete">Incomplete</option>
-          <option value="Pending Parts">Pending Parts</option>
-        </select>
-        {errors.completionStatus && <p className="text-red-500">{errors.completionStatus.message}</p>}
-      </label>
-      <button type="submit" className="bg-blue-500 text-white p-2 mt-4">
-        Create
-      </button>
-    </form>
+        <label className="p-2">
+          Priority:
+          <select {...register("priority")} className="border p-1 w-full">
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+          </select>
+          {errors.priority && <p className="text-red-500">{errors.priority.message}</p>}
+        </label>
+        <label className="p-2">
+          Completion Status:
+          <select {...register("completionStatus")} className="border p-1 w-full">
+            <option value="Complete">Complete</option>
+            <option value="Incomplete">Incomplete</option>
+            <option value="Pending Parts">Pending Parts</option>
+          </select>
+          {errors.completionStatus && <p className="text-red-500">{errors.completionStatus.message}</p>}
+        </label>
+        <button type="submit" className="bg-blue-500 text-white p-2 mt-4 w-1/2 m-auto">
+          Create
+        </button>
+      </form>
+    </div>
   );
 };
 
