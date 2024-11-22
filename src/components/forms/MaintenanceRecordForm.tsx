@@ -1,53 +1,90 @@
 import { useForm, useFieldArray, SubmitHandler } from "react-hook-form";
+import { v4 as uuidv4 } from 'uuid'; 
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState, useEffect } from "react";
 
-// Zod schema for maintenance records
-const maintenanceRecordSchema = z.object({
-  id: z.string().min(1, "ID is required").max(255),
-  equipmentId: z.string().min(1, "Equipment ID is required").max(255),
-  date: z.date().refine((date) => date <= new Date(), {
-    message: 'Date must be in the past',
-    path: ['date'],
-  }),
-  type: z.enum(["Preventive", "Repair", "Emergency"]),
-  technician: z.string().min(2, "Technician is required").max(255),
-  hoursSpent: z.number().min(0, "Hours spent must be positive").max(24, "Hours must be 24 or less"),
-  description: z.string().min(10, "Description is required").max(500),
-  partsReplaced: z.array(z.string()).optional(),
-  priority: z.enum(["Low", "Medium", "High"]),
-  completionStatus: z.enum(["Complete", "Incomplete", "Pending Parts"]),
-});
+// The function to generate the schema with equipment IDs
+// Regenerate the schema upon retrieval
+const createMaintenanceRecordSchema = (equipmentIds: string[]) => {
+  if (equipmentIds.length === 0) {
+    throw new Error("Equipment IDs cannot be empty");
+  }
 
-// Infer the TypeScript type from the Zod schema
-type MaintenanceRecordFormData = z.infer<typeof maintenanceRecordSchema>;
+  return z.object({
+    id: z.string().optional(),
+    equipmentId: z.enum(equipmentIds as [string, ...string[]]),
+    date: z.date().refine((date) => date <= new Date(), {
+      message: 'Date must be in the past',
+      path: ['date'],
+    }),
+    type: z.enum(["Preventive", "Repair", "Emergency"]),
+    technician: z.string().min(2, "Technician is required").max(255),
+    hoursSpent: z.number().min(0, "Hours spent must be positive").max(24, "Hours must be 24 or less"),
+    description: z.string().min(10, "Description is required").max(500),
+    partsReplaced: z.array(z.string().min(1)).optional(),
+    priority: z.enum(["Low", "Medium", "High"]),
+    completionStatus: z.enum(["Complete", "Incomplete", "Pending Parts"]),
+  });
+};
+
+// Type for Maintenance Record Form Data
+type MaintenanceRecordFormData = z.infer<ReturnType<typeof createMaintenanceRecordSchema>>;
 
 const MaintenanceRecordForm = ({ onClose }: { onClose: () => void }) => {
-  // React Hook Form setup with maintenance form
+  const [equipmentIds, setEquipmentIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Fetch equipment data
+    const fetchEquipmentData = async () => {
+      try {
+        const response = await fetch('/api/equipment');
+        const equipmentData = await response.json();
+        const ids = equipmentData.map((item: { id: string }) => item.id);
+        setEquipmentIds(ids);
+      } catch (error) {
+        console.error("Error fetching equipment data", error);
+      }
+    };
+
+    fetchEquipmentData();
+  }, []);
+
+  // Create the schema with equipmentIds once data is available
+  const schema = equipmentIds.length ? createMaintenanceRecordSchema(equipmentIds) : null;
+
+  // Avoid calling useForm if schema is not available
   const {
     register,
     control,
     handleSubmit,
     formState: { errors },
   } = useForm<MaintenanceRecordFormData>({
-    resolver: zodResolver(maintenanceRecordSchema),
+    resolver: schema ? zodResolver(schema) : undefined, // Only use resolver when schema is available
   });
-  // Set up useFieldArray for partsReplaced
+
   const { fields, append, remove } = useFieldArray({
     control,
     name: "partsReplaced",
-    rules: { required: false }
   });
+
   const onSubmit: SubmitHandler<MaintenanceRecordFormData> = async (data) => {
+    const id = uuidv4().slice(0, 10)
+    const idData = { ...data, id: id };
     onClose();
     const response = await fetch('/api/maintenance', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify(idData)
     });
   };
+
+  // Show loading screen until schema is ready
+  if (!schema) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="z-0 fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 dark:bg-opacity-80 dark:bg-neutral-900 justify-center" onClick={onClose}>
@@ -65,13 +102,12 @@ const MaintenanceRecordForm = ({ onClose }: { onClose: () => void }) => {
           ✖
         </button>
         <label className="p-2">
-          Id:
-          <input {...register("id")} className="border p-1 w-full" />
-          {errors.id && <p className="text-red-500">{errors.id.message}</p>}
-        </label>
-        <label className="p-2">
-          Equipment Id:
-          <input {...register("equipmentId")} className="border p-1 w-full" />
+          Equipment:
+          <select {...register("equipmentId")} className="border p-1 w-full">
+            {equipmentIds.map((id) => (
+              <option key={id} value={id}>{id}</option>
+            ))}
+          </select>
           {errors.equipmentId && <p className="text-red-500">{errors.equipmentId.message}</p>}
         </label>
         <label className="p-2">
@@ -115,33 +151,30 @@ const MaintenanceRecordForm = ({ onClose }: { onClose: () => void }) => {
         </label>
         <div>
           <label className="p-2">
-          Parts Replaced (optional):
-          <button
+            Parts Replaced (optional):
+            <button
               type="button"
               className="bg-green-500 text-white px-2 py-1 ml-2"
-              onClick={() => append("")} // Add a new empty field
-          >
+              onClick={() => append("")}
+            >
               Add Part
-          </button>
+            </button>
           </label>
           {fields.map((field, index) => (
-          <div key={field.id} className="flex items-center space-x-2 p-2">
+            <div key={field.id} className="flex items-center space-x-2 p-2">
               <input
-              {...register(`partsReplaced.${index}` as const)} // Register each part field
-              className="border p-2 w-full"
+                {...register(`partsReplaced.${index}` as const)}
+                className="border p-2 w-full"
               />
               <button
-              type="button"
-              className="bg-red-500 text-white px-2 py-1"
-              onClick={() => remove(index)} // Remove the field at this index
+                type="button"
+                className="bg-red-500 text-white px-2 py-1"
+                onClick={() => remove(index)}
               >
-              Remove
+                Remove
               </button>
-          </div>
+            </div>
           ))}
-          {errors.partsReplaced && (
-          <p className="text-red-500">{errors.partsReplaced.message}</p>
-          )}
         </div>
         <label className="p-2">
           Priority:

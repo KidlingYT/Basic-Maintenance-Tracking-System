@@ -1,22 +1,22 @@
 [
-    {
-      "id": 1,
-      "name": "Excavator",
-      "location": "Warehouse A",
-      "department": "Machining",
-      "model": "EX-200",
-      "serialNumber": "EX200-12345",
-      "installDate": "2020-01-15",
-      "status": "Operational"
-    },
-    {
-      "id": 2,
-      "name": "Bulldozer",
-      "location": "Construction Site",
-      "department": "Assembly",
-      "model": "BD-150",
-      "serialNumber": "BD150-67890",
-      "installDate": "2018-05-20",
-      "status": "Maintenance"
-    }
+  {
+    "name": "Bulldozer",
+    "location": "Mechanicsburg, PA",
+    "department": "Machining",
+    "model": "hey",
+    "serialNumber": "123",
+    "installDate": "2024-11-08T00:00:00.000Z",
+    "status": "Retired",
+    "id": "253c387e-1"
+  },
+  {
+    "name": "STDDB",
+    "location": "Mechanicsburg, PA",
+    "department": "Machining",
+    "model": "hey",
+    "serialNumber": "123",
+    "installDate": "2024-11-02T00:00:00.000Z",
+    "status": "Operational",
+    "id": "17609c5b-f"
+  }
 ]

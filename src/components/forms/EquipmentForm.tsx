@@ -1,10 +1,11 @@
 import { useForm, SubmitHandler } from "react-hook-form";
+import { v4 as uuidv4 } from 'uuid'; 
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 // Zod schema for equipment
 const equipmentSchema = z.object({
-    id: z.string().min(1, "Id is required").max(255), 
+    id: z.string().optional(),
     name: z.string().min(3, "Name must be at least 3 characters").max(255),
     location: z.string().min(1, "Location is required").max(255),
     department: z.enum(['Machining', 'Assembly', 'Packaging', 'Shipping']),
@@ -31,14 +32,16 @@ const EquipmentForm = ({ onClose }: { onClose: () => void }) => {
     resolver: zodResolver(equipmentSchema),
   });
 
-  const onSubmit: SubmitHandler<EquipmentSchemaFormData> = async (data) => {
+  const onSubmit: SubmitHandler<EquipmentSchemaFormData> = async (data) => {  
+    const id = uuidv4().slice(0, 10)
+    const idData = { ...data, id: id };
     onClose();
     const response = await fetch('/api/equipment', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify(idData)
     });
   };
 
@@ -56,11 +59,6 @@ const EquipmentForm = ({ onClose }: { onClose: () => void }) => {
           >
           ✖
           </button>
-          <label className="p-2">
-          Id:
-          <input {...register("id")} className="border p-1 w-full" />
-          {errors.id && <p className="text-red-500">{errors.id.message}</p>}
-          </label>
           <label className="p-2">
           Name:
           <input {...register("name")} className="border p-1 w-full" />

@@ -1,62 +1,52 @@
 [
-    {
-      "id": "1",
-      "equipmentId": "101",
-      "date": "2024-01-10T00:00:00.000Z",
-      "type": "Preventive",
-      "technician": "John Smith",
-      "hoursSpent": 3,
-      "description": "Routine oil change and system inspection.",
-      "partsReplaced": ["Oil Filter", "Hydraulic Oil"],
-      "priority": "Low",
-      "completionStatus": "Complete"
-    },
-    {
-      "id": "2",
-      "equipmentId": "102",
-      "date": "2024-02-15T00:00:00.000Z",
-      "type": "Repair",
-      "technician": "Jane Doe",
-      "hoursSpent": 5,
-      "description": "Repaired track alignment and replaced damaged bolts.",
-      "partsReplaced": ["Track Bolts"],
-      "priority": "Medium",
-      "completionStatus": "Complete"
-    },
-    {
-      "id": "3",
-      "equipmentId": "103",
-      "date": "2024-03-05T00:00:00.000Z",
-      "type": "Emergency",
-      "technician": "Alex Johnson",
-      "hoursSpent": 8,
-      "description": "Replaced faulty hydraulic pump.",
-      "partsReplaced": ["Hydraulic Pump"],
-      "priority": "High",
-      "completionStatus": "Incomplete"
-    },
-    {
-      "id": "4",
-      "equipmentId": "101",
-      "date": "2024-04-01T00:00:00.000Z",
-      "type": "Preventive",
-      "technician": "Emma Watson",
-      "hoursSpent": 2,
-      "description": "Calibrated engine sensors.",
-      "priority": "Low",
-      "completionStatus": "Complete"
-    },
-    {
-      "id": "5",
-      "equipmentId": "104",
-      "date": "2024-04-20T00:00:00.000Z",
-      "type": "Repair",
-      "technician": "Michael Brown",
-      "hoursSpent": 6,
-      "description": "Repaired leaking coolant system and replaced hoses.",
-      "partsReplaced": ["Coolant Hose"],
-      "priority": "High",
-      "completionStatus": "Pending Parts"
-    }
+  {
+    "equipmentId": "253c387e-1",
+    "date": "2024-11-15T00:00:00.000Z",
+    "type": "Preventive",
+    "technician": "eli",
+    "hoursSpent": 4,
+    "description": "free stuff y",
+    "partsReplaced": [
+      "head",
+      "yert"
+    ],
+    "priority": "Low",
+    "completionStatus": "Complete"
+  },
+  {
+    "equipmentId": "253c387e-1",
+    "date": "2024-11-20T00:00:00.000Z",
+    "type": "Preventive",
+    "technician": "eli",
+    "hoursSpent": 4,
+    "description": "free yotube",
+    "partsReplaced": [],
+    "priority": "Low",
+    "completionStatus": "Complete",
+    "id": "0997ec98-0"
+  },
+  {
+    "equipmentId": "253c387e-1",
+    "date": "2024-11-01T00:00:00.000Z",
+    "type": "Preventive",
+    "technician": "eli",
+    "hoursSpent": 4,
+    "description": "free tereas",
+    "partsReplaced": [],
+    "priority": "Low",
+    "completionStatus": "Complete",
+    "id": "fad54ae5-f"
+  },
+  {
+    "equipmentId": "17609c5b-f",
+    "date": "2024-11-21T00:00:00.000Z",
+    "type": "Preventive",
+    "technician": "eli",
+    "hoursSpent": 7,
+    "description": "free tereas",
+    "partsReplaced": [],
+    "priority": "Low",
+    "completionStatus": "Complete",
+    "id": "c2b23cd1-8"
+  }
 ]
-  
