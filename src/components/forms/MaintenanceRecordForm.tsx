@@ -33,6 +33,7 @@ type MaintenanceRecordFormData = z.infer<ReturnType<typeof createMaintenanceReco
 
 const MaintenanceRecordForm = ({ onClose }: { onClose: () => void }) => {
   const [equipmentIds, setEquipmentIds] = useState<string[]>([]);
+  const [isSuccessMessage, setIsSuccessMessage] = useState(false);
 
   useEffect(() => {
     // Fetch equipment data
@@ -71,7 +72,6 @@ const MaintenanceRecordForm = ({ onClose }: { onClose: () => void }) => {
   const onSubmit: SubmitHandler<MaintenanceRecordFormData> = async (data) => {
     const id = uuidv4().slice(0, 10)
     const idData = { ...data, id: id };
-    onClose();
     const response = await fetch('/api/maintenance', {
       method: 'POST',
       headers: {
@@ -79,6 +79,13 @@ const MaintenanceRecordForm = ({ onClose }: { onClose: () => void }) => {
       },
       body: JSON.stringify(idData)
     });
+    if (response.ok) {
+      setIsSuccessMessage(true);
+      setTimeout(() => { 
+        setIsSuccessMessage(false);
+        onClose();
+    }, 3000); 
+    } 
   };
 
   // Show loading screen until schema is ready
@@ -87,6 +94,13 @@ const MaintenanceRecordForm = ({ onClose }: { onClose: () => void }) => {
   }
 
   return (
+    <>
+    {isSuccessMessage && (
+      <div className="fixed top-10 right-10 bg-green-500 text-white p-4 rounded shadow-lg">
+        <p className="success-message">Maintenance record successfully created!</p>
+      </div>
+    )}
+    {!isSuccessMessage && (
     <div className="z-0 fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 dark:bg-opacity-80 dark:bg-neutral-900 justify-center" onClick={onClose}>
       <form
         className="z-50 bg-slate-100 fixed inset-x-1/3 top-16 w-1/3 h-5/6 text-black p-10 flex flex-col overflow-auto align-center justify-center"
@@ -142,7 +156,7 @@ const MaintenanceRecordForm = ({ onClose }: { onClose: () => void }) => {
             {...register("hoursSpent", { valueAsNumber: true })}
             className="border p-1 w-full"
           />
-          {errors.hoursSpent && <p className="text-red-500">{errors.hoursSpent.message}</p>}
+          {errors.hoursSpent && <p className="text-red-500 hoursSpent-error">{errors.hoursSpent.message}</p>}
         </label>
         <label className="p-2">
           Description:
@@ -199,6 +213,8 @@ const MaintenanceRecordForm = ({ onClose }: { onClose: () => void }) => {
         </button>
       </form>
     </div>
+    )}
+    </>
   );
 };
 

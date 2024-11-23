@@ -18,6 +18,9 @@ export function EquipmentRecordTable() {
   const [globalFilter, setGlobalFilter] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [editedData, setEditedData] = useState<Record<string, any>>({});
+  const [editingRow, setEditingRow] = useState<string | null>(null);
+
   // Fetch data from the API
   useEffect(() => {
     const fetchData = async () => {
@@ -56,20 +59,59 @@ export function EquipmentRecordTable() {
     });
   }, [data, departmentFilter, statusFilter, globalFilter]);
 
-  // Define columns
-  const columns = React.useMemo<ColumnDef<Equipment>[]>(
-    () => [
-      { accessorKey: "id", header: "ID" },
-      { accessorKey: "name", header: "Equipment Name" },
-      { accessorKey: "location", header: "Location" },
-      { accessorKey: "department", header: "Department" },
-      { accessorKey: "model", header: "Model" },
-      { accessorKey: "serialNumber", header: "Serial Number" },
-      { accessorKey: "installDate", header: "Install Date" },
-      { accessorKey: "status", header: "Status" },
-    ],
-    []
-  );
+  // Handle edit change for status field
+  const handleEditChange = (id: string, value: string) => {
+    setEditedData((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], status: value },
+    }));
+  };
+
+  const handleSave = async (id: string) => {
+    const updatedRecord = { id, ...editedData[id] };
+
+    try {
+      const response = await fetch('/api/equipment', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedRecord),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update record');
+      }
+
+      // Update the table data
+      setData((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, ...editedData[id] } : item))
+      );
+
+      // Reset editing state
+      setEditingRow(null);
+      setEditedData((prev) => {
+        const { [id]: _, ...rest } = prev;
+        return rest;
+      });
+    } catch (error) {
+      console.error('Error updating record:', error);
+    }
+  };
+
+  // Define columns (only status is editable)
+  const columns = React.useMemo<ColumnDef<Equipment>[]>(() => [
+    { accessorKey: "id", header: "ID" },
+    { accessorKey: "name", header: "Equipment Name" },
+    { accessorKey: "location", header: "Location" },
+    { accessorKey: "department", header: "Department" },
+    { accessorKey: "model", header: "Model" },
+    { accessorKey: "serialNumber", header: "Serial Number" },
+    { accessorKey: "installDate", header: "Install Date" },
+    { 
+      accessorKey: "status", 
+      header: "Status",
+      cell: (info) => info.getValue(), // Define custom cell rendering for status
+    },
+  ], []);
 
   const table = useReactTable({
     data: filteredData, // Use filtered data
@@ -82,7 +124,7 @@ export function EquipmentRecordTable() {
     onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel()
+    getFilteredRowModel: getFilteredRowModel(),
   });
 
   if (isLoading) {
@@ -161,26 +203,69 @@ export function EquipmentRecordTable() {
           ))}
         </thead>
         <tbody className="divide-y divide-blue-200">
-          {table.getRowModel().rows.map((row) => (
-            <tr
-              key={row.id}
-              className={`divide-x divide-blue-200 p-2 ${
-                row.original.status === "Down"
-                  ? "bg-red-500 text-white"
-                  : row.original.status === "Maintenance"
-                  ? "bg-yellow-500 text-black"
-                  : row.original.status === "Operational"
-                  ? "bg-green-500 text-white"
-                  : "bg-slate-500 text-white"
-              }`}
-            >
-              {row.getVisibleCells().map((cell) => (
-                <td key={cell.id} className="p-2">
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+          {table.getRowModel().rows.map((row) => {
+            const isEditing = row.original.id === editingRow;
+
+            return (
+              <tr
+                key={row.id}
+                className={`divide-x divide-blue-200 p-2 ${
+                  row.original.status === "Down"
+                    ? "bg-red-500 text-white"
+                    : row.original.status === "Maintenance"
+                    ? "bg-yellow-500 text-black"
+                    : row.original.status === "Operational"
+                    ? "bg-green-500 text-white"
+                    : "bg-slate-500 text-white"
+                }`}
+              >
+                {row.getVisibleCells().map((cell) => {
+                  const cellValue = cell.getValue();
+                  const accessorKey = cell.column.id;
+
+                  return (
+                    <td key={cell.id} className="p-2">
+                      {accessorKey === "status" && isEditing ? (
+                        <select
+                          value={editedData[row.original.id]?.status || cellValue}
+                          onChange={(e) =>
+                            handleEditChange(row.original.id, e.target.value)
+                          }
+                          className="p-2 w-full text-gray-900"
+                        >
+                          <option value="Operational">Operational</option>
+                          <option value="Down">Down</option>
+                          <option value="Maintenance">Maintenance</option>
+                          <option value="Retired">Retired</option>
+                        </select>
+                      ) : (
+                        flexRender(cell.column.columnDef.cell, cell.getContext())
+                      )}
+                    </td>
+                  );
+                })}
+
+                {/* Action Buttons */}
+                <td>
+                  {isEditing ? (
+                    <button
+                      onClick={() => handleSave(row.original.id)}
+                      className="px-2 py-1 bg-blue-500 text-white rounded"
+                    >
+                      Save
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setEditingRow(row.original.id)}
+                      className="px-2 py-1 bg-gray-500 text-white rounded"
+                    >
+                      Edit
+                    </button>
+                  )}
                 </td>
-              ))}
-            </tr>
-          ))}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

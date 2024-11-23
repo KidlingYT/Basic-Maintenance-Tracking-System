@@ -31,3 +31,33 @@ export async function POST(req) {
     return new Response(JSON.stringify({ message: 'Error storing data' }), { status: 500 });
   }
 }
+export async function PUT(req) {
+  try {
+    // Read the existing data
+    const objectData = fs.readFileSync(dataPath, 'utf8');
+    const arrayData = JSON.parse(objectData);
+
+    // Get the updated record from the request body
+    const updatedRecord = await req.json();
+
+    // Find the index of the record to update
+    const recordIndex = arrayData.findIndex((item) => item.id === updatedRecord.id);
+
+    if (recordIndex === -1) {
+      return new Response(JSON.stringify({ message: 'Record not found' }), { status: 404 });
+    }
+
+    // Update the record
+    arrayData[recordIndex] = { ...arrayData[recordIndex], ...updatedRecord };
+
+    // Save the updated data back to the file
+    const updatedData = JSON.stringify(arrayData, null, 2);
+    fs.writeFileSync(dataPath, updatedData, 'utf8');
+
+    return new Response(JSON.stringify({ message: 'Record updated successfully' }), { status: 200 });
+  } catch (error) {
+    console.error(error);
+    return new Response(JSON.stringify({ message: 'Error updating data' }), { status: 500 });
+  }
+}
+

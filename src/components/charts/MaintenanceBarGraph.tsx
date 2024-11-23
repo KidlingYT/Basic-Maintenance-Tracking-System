@@ -1,4 +1,5 @@
 "use client";
+import { Equipment } from "@/app/interfaces/equipment";
 import { MaintenanceRecord } from "@/app/interfaces/maintenance_record";
 import React, { useState, useEffect } from "react";
 import { BarChart, Bar, CartesianGrid, XAxis, YAxis } from "recharts";
@@ -20,6 +21,11 @@ const MaintenanceBarGraph = () => {
           throw new Error("Failed to fetch data");
         }
         const result: MaintenanceRecord[] = await response.json();
+        const response2 = await fetch("api/equipment");
+        if (!response2.ok) {
+          throw new Error("Failed to fetch data");
+        }
+        const result2: Equipment[] = await response2.json();
 
         // Calculate hours by department
         const departmentCounts: Record<Department, number> = {
@@ -29,10 +35,16 @@ const MaintenanceBarGraph = () => {
           Shipping: 0,
         };
 
-        // result.forEach((item) => { // Need to link to equipment data
-        //     const department = item.department as Department; // Explicitly cast to Department
-        //     departmentCounts[department] += item.hoursSpent;
-        //   });
+        result.forEach((maintenance) => { // for each maintenance record
+          result2.forEach((equipment) => {
+            if (maintenance.equipmentId === equipment.id) {
+              let department = equipment.department;
+              departmentCounts[department] += maintenance.hoursSpent;
+              return;
+            }
+          })
+          
+        });
 
         const formattedData = Object.entries(departmentCounts).map(
           ([name, value]) => ({

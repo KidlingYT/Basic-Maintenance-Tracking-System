@@ -6,19 +6,23 @@ import {
   getCoreRowModel,
   getSortedRowModel,
   getFilteredRowModel,
+  getGroupedRowModel,
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
 import { MaintenanceRecord } from "@/app/interfaces/maintenance_record";
+import { Equipment } from "@/app/interfaces/equipment";
 
 export function MaintenanceTable() {
   const [isLoading, setIsLoading] = useState(false);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [data, setData] = useState<MaintenanceRecord[]>([]);
+  const [equipmentData, setEquipmentData] = useState<Equipment[]>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState(""); 
   const [priorityFilter, setPriorityFilter] = useState(""); 
   const [completionFilter, setCompletionFilter] = useState(""); 
+  const [grouping, setGrouping] = useState<string[]>([]); // Track grouping state
 
   // Fetch data from the API
   useEffect(() => {
@@ -31,6 +35,12 @@ export function MaintenanceTable() {
         }
         const result = await response.json();
         setData(result);
+        const response2 = await fetch("/api/equipment");
+        if (!response2.ok) {
+          throw new Error("Failed to fetch data");
+        }
+        const result2 = await response2.json();
+        setEquipmentData(result2);
       } catch (error) {
         console.error(error);
       } finally {
@@ -54,33 +64,34 @@ export function MaintenanceTable() {
   }, [data, typeFilter, priorityFilter, completionFilter]);
 
   // Define columns
-  const columns = React.useMemo<ColumnDef<MaintenanceRecord>[]>(
-    () => [
-      { accessorKey: "id", header: "ID" },
-      { accessorKey: "equipmentId", header: "Equipment ID" },
-      { accessorKey: "date", header: "Date" },
-      { accessorKey: "type", header: "Type" },
-      { accessorKey: "hoursSpent", header: "Hours Spent" },
-      { accessorKey: "description", header: "Description" },
-      { accessorKey: "partsReplaced", header: "Parts Replaced" },
-      { accessorKey: "priority", header: "Priority" },
-      { accessorKey: "completionStatus", header: "Completion Status" },
-    ],
-    []
-  );
+  const columns = React.useMemo<ColumnDef<MaintenanceRecord>[]>(() => [
+    { accessorKey: "id", header: "ID" },
+    { accessorKey: "equipmentId", header: "Equipment ID" },
+    { accessorKey: "date", header: "Date" },
+    { accessorKey: "type", header: "Type" },
+    { accessorKey: "hoursSpent", header: "Hours Spent" },
+    { accessorKey: "description", header: "Description" },
+    { accessorKey: "partsReplaced", header: "Parts Replaced" },
+    { accessorKey: "priority", header: "Priority" },
+    { accessorKey: "completionStatus", header: "Completion Status" },
+  ], []);
 
+  // Initialize the table
   const table = useReactTable({
     data: filteredData, // Use filtered data
     columns,
     state: {
       sorting,
       globalFilter,
+      grouping, // Pass the grouping state
     },
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
+    onGroupingChange: setGrouping, // Set the function to handle grouping changes
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getGroupedRowModel: getGroupedRowModel(), // Enable row grouping
   });
 
   if (isLoading) {
@@ -146,6 +157,16 @@ export function MaintenanceTable() {
         </select>
       </div>
 
+      {/* Grouping Toggle */}
+      <div>
+        <button
+          onClick={() => setGrouping(grouping.length ? [] : ["equipmentId"])}  // Toggle grouping by equipmentId
+          className="p-2 border rounded bg-blue-500 text-white"
+        >
+          {grouping.length ? "Ungroup by Equipment" : "Group by Equipment"}
+        </button>
+      </div>
+
       {/* Table */}
       <table className="border-solid border-white border-2 w-full">
         <thead className="border-b border-blue border-2">
@@ -172,13 +193,45 @@ export function MaintenanceTable() {
         </thead>
         <tbody className="divide-y divide-blue-200">
           {table.getRowModel().rows.map((row) => (
-            <tr key={row.id} className="divide-x divide-blue-200 p-2 bg-slate-500">
-              {row.getVisibleCells().map((cell) => (
-                <td key={cell.id} className="p-2">
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
+            // If the row is grouped, render a grouped row, otherwise render a regular row
+            <React.Fragment key={row.id}>
+              {/* Grouped Row (Parent) */}
+              {row.getIsGrouped() ? (
+                <tr
+                  key={row.id}
+                  className="divide-x divide-blue-200 p-2 bg-slate-500 cursor-pointer"
+                  onClick={row.getToggleExpandedHandler()}
+                >
+                  <td colSpan={row.getVisibleCells().length} className="p-2 text-bold">
+                    {row.getIsExpanded() ? "Collapse" : "Expand"} Group:{" "}
+                    {String(row.getAllCells().find((cell) => cell.column.id === 'equipmentId')?.getValue())}
+                  </td>
+                </tr>
+              ) : (
+                <tr className="divide-x divide-blue-200 p-2 bg-slate-500">
+                  {row.getVisibleCells().map((cell) => {
+                    const equipmentIdCell = cell.column.id === 'equipmentId';
+                    const equipmentName = equipmentData.find((equipment) => equipment.id === cell.getValue());
+                    
+                    return (
+                      <td key={cell.id} className="p-2" title={equipmentIdCell && equipmentName ? equipmentName.name : ""}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    );
+                  })}
+                </tr>
+              )}
+              {/* Render child rows if expanded */}
+              {row.getIsExpanded() && row.subRows.map((subRow) => (
+                <tr key={subRow.id}>
+                  {subRow.getVisibleCells().map((cell) => (
+                    <td key={cell.id} className="p-2">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
               ))}
-            </tr>
+            </React.Fragment>
           ))}
         </tbody>
       </table>
