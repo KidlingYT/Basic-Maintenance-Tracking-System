@@ -30,13 +30,15 @@ export default function SideBarLinks({page = ''}) {
             </Link>
             {page === 'equipment' && (
                 <div onClick={() => setIsEquipmentFormVisible(true)} className="h-12 w-full align-center bg-blue-900
-                transition duration-150 ease-out hover:ease-in hover:bg-blue-100 hover:text-black cursor-pointer">
+                transition duration-150 ease-out hover:ease-in hover:bg-blue-100 hover:text-black cursor-pointer"
+                id="new_equipment_form">
                     <p className="text-center p-3">New Equipment Form ⇗</p>
                 </div>
             )}
             {page === 'maintenance' && (
                 <div onClick={() => setIsMaintenanceFormVisible(true)} className="h-12 w-full align-center bg-blue-900
-                transition duration-150 ease-out hover:ease-in hover:bg-blue-100 hover:text-black cursor-pointer">
+                transition duration-150 ease-out hover:ease-in hover:bg-blue-100 hover:text-black cursor-pointer"
+                id="new_maintenance_record_form">
                     <p className="text-center p-3">Maintenance Record Form ⇗</p>
                 </div>
             )}

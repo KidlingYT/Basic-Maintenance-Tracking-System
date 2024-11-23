@@ -23,6 +23,8 @@ export function MaintenanceTable() {
   const [priorityFilter, setPriorityFilter] = useState(""); 
   const [completionFilter, setCompletionFilter] = useState(""); 
   const [grouping, setGrouping] = useState<string[]>([]); // Track grouping state
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
 
   // Fetch data from the API
   useEffect(() => {
@@ -51,7 +53,7 @@ export function MaintenanceTable() {
     fetchData();
   }, []);
 
-  // Filter the data based on the dropdown selections
+  // Filter the data based on the dropdown selections and date range
   const filteredData = React.useMemo(() => {
     return data.filter((record) => {
       const matchesType = typeFilter ? record.type === typeFilter : true;
@@ -59,14 +61,23 @@ export function MaintenanceTable() {
       const matchesCompletion = completionFilter
         ? record.completionStatus === completionFilter
         : true;
-      return matchesType && matchesPriority && matchesCompletion;
+
+      // Date range filtering logic
+      const recordDate = new Date(record.date);
+      const start = startDate ? new Date(startDate) : null;
+      const end = endDate ? new Date(endDate) : null;
+
+      const matchesDateRange = (start ? recordDate >= start : true) && (end ? recordDate <= end : true);
+
+      return matchesType && matchesPriority && matchesCompletion && matchesDateRange;
     });
-  }, [data, typeFilter, priorityFilter, completionFilter]);
+  }, [data, typeFilter, priorityFilter, completionFilter, startDate, endDate]);
 
   // Define columns
   const columns = React.useMemo<ColumnDef<MaintenanceRecord>[]>(() => [
     { accessorKey: "id", header: "ID" },
     { accessorKey: "equipmentId", header: "Equipment ID" },
+    { accessorKey: "equipmentName", header: "Equipment Name" },
     { accessorKey: "date", header: "Date" },
     { accessorKey: "type", header: "Type" },
     { accessorKey: "hoursSpent", header: "Hours Spent" },
@@ -117,11 +128,11 @@ export function MaintenanceTable() {
           placeholder="Search all columns..."
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
-          className="p-2 border rounded w-full"
+          className="p-2 border rounded w-full text-gray-900"
         />
       </div>
 
-      {/* Filters for Type, Priority, and Completion Status */}
+      {/* Filters for Type, Priority, Completion Status, and Date Range */}
       <div className="flex space-x-4">
         <select
           value={typeFilter}
@@ -155,6 +166,23 @@ export function MaintenanceTable() {
           <option value="Incomplete">Incomplete</option>
           <option value="Pending Parts">Pending Parts</option>
         </select>
+      </div>
+
+      {/* Date Range Filter */}
+      <div className="flex space-x-4 text-gray-900">
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="p-2 border rounded"
+        />
+        <span>to</span>
+        <input
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          className="p-2 border rounded"
+        />
       </div>
 
       {/* Grouping Toggle */}
@@ -192,48 +220,46 @@ export function MaintenanceTable() {
           ))}
         </thead>
         <tbody className="divide-y divide-blue-200">
-          {table.getRowModel().rows.map((row) => (
-            // If the row is grouped, render a grouped row, otherwise render a regular row
-            <React.Fragment key={row.id}>
-              {/* Grouped Row (Parent) */}
-              {row.getIsGrouped() ? (
-                <tr
-                  key={row.id}
-                  className="divide-x divide-blue-200 p-2 bg-slate-500 cursor-pointer"
-                  onClick={row.getToggleExpandedHandler()}
-                >
-                  <td colSpan={row.getVisibleCells().length} className="p-2 text-bold">
-                    {row.getIsExpanded() ? "Collapse" : "Expand"} Group:{" "}
-                    {String(row.getAllCells().find((cell) => cell.column.id === 'equipmentId')?.getValue())}
-                  </td>
-                </tr>
-              ) : (
-                <tr className="divide-x divide-blue-200 p-2 bg-slate-500">
-                  {row.getVisibleCells().map((cell) => {
-                    const equipmentIdCell = cell.column.id === 'equipmentId';
-                    const equipmentName = equipmentData.find((equipment) => equipment.id === cell.getValue());
-                    
-                    return (
-                      <td key={cell.id} className="p-2" title={equipmentIdCell && equipmentName ? equipmentName.name : ""}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
-                    );
-                  })}
-                </tr>
-              )}
-              {/* Render child rows if expanded */}
-              {row.getIsExpanded() && row.subRows.map((subRow) => (
-                <tr key={subRow.id}>
-                  {subRow.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="p-2">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        {table.getRowModel().rows.map((row) => (
+          <React.Fragment key={row.id}>
+            {row.getIsGrouped() ? (
+              <tr
+                key={row.id}
+                className="divide-x divide-blue-200 p-2 bg-slate-500 cursor-pointer"
+                onClick={row.getToggleExpandedHandler()}
+              >
+                <td colSpan={row.getVisibleCells().length} className="p-2 text-bold">
+                  {row.getIsExpanded() ? "Collapse" : "Expand"} Group:{" "}
+                  {String(row.getAllCells().find((cell) => cell.column.id === 'equipmentId')?.getValue())}
+                </td>
+              </tr>
+            ) : (
+              <tr className="divide-x divide-blue-200 p-2 bg-slate-500">
+                {row.getVisibleCells().map((cell) => {
+                  const equipmentIdCell = cell.column.id === 'equipmentId';
+                  const equipmentName = equipmentData.find((equipment) => equipment.id === cell.getValue());
+                  
+                  return (
+                    <td key={cell.id} className="p-2" title={equipmentIdCell && equipmentName ? equipmentName.name : ""}>
+                      {equipmentIdCell && equipmentName ? equipmentName.name : flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
-                  ))}
-                </tr>
-              ))}
-            </React.Fragment>
-          ))}
-        </tbody>
+                  );
+                })}
+              </tr>
+            )}
+            {row.getIsExpanded() && row.subRows.map((subRow) => (
+              <tr key={subRow.id}>
+                {subRow.getVisibleCells().map((cell) => (
+                  <td key={cell.id} className="p-2">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </React.Fragment>
+        ))}
+      </tbody>
+
       </table>
     </div>
   );
