@@ -77,18 +77,21 @@ test('Should filter records by date range', async ({ page }) => {
     }
 });
 test('Maintenance Table - Equipment Name column exists and has data', async ({ page }) => {
-    await page.goto('/maintenance');
-  
-    const table = await page.locator('table');
-    const equipmentNameHeader = await table.locator('th:text("Equipment Name")');
-    await expect(equipmentNameHeader).toBeVisible();
-  
-    const rows = await table.locator('tbody tr');
-    for (let i = 0; i < await rows.count(); i++) {
-      const equipmentNameCell = rows.nth(i).locator('td', { hasText: 'Equipment Name' });
-      await expect(equipmentNameCell).not.toBeEmpty();
-    }
-  
-    const equipmentNameCells = await table.locator('td:has-text("Unknown")');
-    await expect(equipmentNameCells).toHaveCount(0);
+  await page.goto('/maintenance');
+
+  const table = await page.locator('table');
+  const equipmentNameHeader = await table.locator('th:text("Equipment Name")');
+  await expect(equipmentNameHeader).toBeVisible();
+
+  const headerIndex = await table.locator('th').allTextContents()
+    .then(headers => headers.indexOf('Equipment Name'));
+
+  const rows = await table.locator('tbody tr');
+  for (let i = 0; i < await rows.count(); i++) {
+    const equipmentNameCell = rows.nth(i).locator('td').nth(headerIndex);
+    await expect(equipmentNameCell).not.toBeEmpty();
+  }
+
+  const equipmentNameCells = await table.locator('td:has-text("Unknown")');
+  await expect(equipmentNameCells).toHaveCount(0);
 });
