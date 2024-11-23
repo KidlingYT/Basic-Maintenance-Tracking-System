@@ -237,29 +237,19 @@ export function MaintenanceTable() {
               <tr className="divide-x divide-blue-200 p-2 bg-slate-500">
                 {row.getVisibleCells().map((cell) => {
                   const equipmentIdCell = cell.column.id === 'equipmentId';
-                  const equipmentName = equipmentData.find((equipment) => equipment.id === cell.getValue());
-                  
+                  const equipmentName = equipmentData.find((equipment) => equipment.id === row.original.equipmentId)?.name;  // Fix the lookup
+
                   return (
-                    <td key={cell.id} className="p-2" title={equipmentIdCell && equipmentName ? equipmentName.name : ""}>
-                      {equipmentIdCell && equipmentName ? equipmentName.name : flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    <td key={cell.id} className="p-2">
+                      {cell.column.id === 'equipmentName' ? (equipmentName || 'N/A') : flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </td>
                   );
                 })}
               </tr>
             )}
-            {row.getIsExpanded() && row.subRows.map((subRow) => (
-              <tr key={subRow.id}>
-                {subRow.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="p-2">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
           </React.Fragment>
         ))}
       </tbody>
-
       </table>
     </div>
   );

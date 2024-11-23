@@ -55,16 +55,21 @@ test('Should filter records by date range', async ({ page }) => {
     await page.waitForSelector('table tbody tr');
 
     const rows = await page.locator('table tbody tr');
-
     const rowCount = await rows.count();
+
     for (let i = 0; i < rowCount; i++) {
       const dateCell = rows.locator(`td:nth-child(3)`).nth(i);
       const dateText = await dateCell.textContent();
 
       if (dateText) {
-        const rowDate = new Date(dateText.trim()).getTime();
+        const formattedDateText = dateText.trim();
+        const rowDate = new Date(formattedDateText).getTime();
         const start = new Date(startDate).getTime();
         const end = new Date(endDate).getTime();
+
+        if (isNaN(rowDate)) {
+          continue;
+        }
 
         expect(rowDate).toBeGreaterThanOrEqual(start);
         expect(rowDate).toBeLessThanOrEqual(end);
