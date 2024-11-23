@@ -1,5 +1,6 @@
 [
   {
+    "id": "0997ec98-1",
     "equipmentId": "253c387e-1",
     "date": "2024-11-15T00:00:00.000Z",
     "type": "Preventive",
@@ -48,5 +49,53 @@
     "priority": "Low",
     "completionStatus": "Complete",
     "id": "c2b23cd1-8"
+  },
+  {
+    "equipmentId": "253c387e-1",
+    "date": "2024-01-01T00:00:00.000Z",
+    "type": "Repair",
+    "technician": "John Doe",
+    "hoursSpent": 2,
+    "description": "Fixed the conveyor belt issue.",
+    "partsReplaced": [],
+    "priority": "High",
+    "completionStatus": "Complete",
+    "id": "03394377-4"
+  },
+  {
+    "equipmentId": "253c387e-1",
+    "date": "2024-01-01T00:00:00.000Z",
+    "type": "Repair",
+    "technician": "John Doe",
+    "hoursSpent": 2,
+    "description": "Fixed the conveyor belt issue.",
+    "partsReplaced": [],
+    "priority": "High",
+    "completionStatus": "Complete",
+    "id": "4babdbba-c"
+  },
+  {
+    "equipmentId": "253c387e-1",
+    "date": "2024-01-01T00:00:00.000Z",
+    "type": "Repair",
+    "technician": "John Doe",
+    "hoursSpent": 2,
+    "description": "Fixed the conveyor belt issue.",
+    "partsReplaced": [],
+    "priority": "High",
+    "completionStatus": "Complete",
+    "id": "204d68c3-0"
+  },
+  {
+    "equipmentId": "253c387e-1",
+    "date": "2024-01-01T00:00:00.000Z",
+    "type": "Repair",
+    "technician": "John Doe",
+    "hoursSpent": 2,
+    "description": "Fixed the conveyor belt issue.",
+    "partsReplaced": [],
+    "priority": "High",
+    "completionStatus": "Complete",
+    "id": "da41aa0e-0"
   }
 ]

@@ -17,6 +17,7 @@ const EquipmentPieChart = () => {
     };
 
     useEffect(() => {
+        // fetch data from the api
         const fetchData = async () => {
             try {
                 setIsLoading(true);

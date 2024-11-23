@@ -66,6 +66,7 @@ const MaintenanceRecordForm = ({ onClose }: { onClose: () => void }) => {
 
   const { fields, append, remove } = useFieldArray({
     control,
+    // @ts-ignore
     name: "partsReplaced",
   });
 

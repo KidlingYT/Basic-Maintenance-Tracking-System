@@ -6,17 +6,57 @@
     "model": "hey",
     "serialNumber": "123",
     "installDate": "2024-11-08T00:00:00.000Z",
-    "status": "Retired",
+    "status": "Down",
     "id": "253c387e-1"
   },
   {
-    "name": "STDDB",
+    "name": "Printer",
     "location": "Mechanicsburg, PA",
     "department": "Machining",
     "model": "hey",
     "serialNumber": "123",
     "installDate": "2024-11-02T00:00:00.000Z",
-    "status": "Operational",
+    "status": "Retired",
     "id": "17609c5b-f"
+  },
+  {
+    "name": "New Equipment",
+    "location": "Warehouse",
+    "department": "Machining",
+    "model": "Model-X",
+    "serialNumber": "12345XYZ",
+    "installDate": "2024-01-01T00:00:00.000Z",
+    "status": "Operational",
+    "id": "a90b7acd-e"
+  },
+  {
+    "name": "New Equipment",
+    "location": "Warehouse",
+    "department": "Machining",
+    "model": "Model-X",
+    "serialNumber": "12345XYZ",
+    "installDate": "2024-01-01T00:00:00.000Z",
+    "status": "Operational",
+    "id": "2e0968a6-4"
+  },
+  {
+    "name": "New Equipment",
+    "location": "Warehouse",
+    "department": "Machining",
+    "model": "Model-X",
+    "serialNumber": "12345XYZ",
+    "installDate": "2024-01-01T00:00:00.000Z",
+    "status": "Operational",
+    "id": "855fafb8-6"
+  },
+  {
+    "name": "New Equipment",
+    "location": "Warehouse",
+    "department": "Machining",
+    "model": "Model-X",
+    "serialNumber": "12345XYZ",
+    "installDate": "2024-01-01T00:00:00.000Z",
+    "status": "Operational",
+    "id": "50b6275e-6"
   }
 ]

@@ -14,7 +14,7 @@ import { MaintenanceRecord } from "@/app/interfaces/maintenance_record";
 import { Equipment } from "@/app/interfaces/equipment";
 
 export function MaintenanceTable() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [data, setData] = useState<MaintenanceRecord[]>([]);
   const [equipmentData, setEquipmentData] = useState<Equipment[]>([]);
@@ -22,13 +22,16 @@ export function MaintenanceTable() {
   const [typeFilter, setTypeFilter] = useState(""); 
   const [priorityFilter, setPriorityFilter] = useState(""); 
   const [completionFilter, setCompletionFilter] = useState(""); 
-  const [grouping, setGrouping] = useState<string[]>([]); // Track grouping state
+  const [grouping, setGrouping] = useState<string[]>([]);
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
 
   // Fetch data from the API
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchData = async () => {
+      
       try {
         setIsLoading(true);
         const response = await fetch("/api/maintenance");
@@ -36,21 +39,31 @@ export function MaintenanceTable() {
           throw new Error("Failed to fetch data");
         }
         const result = await response.json();
-        setData(result);
+        if (isMounted === true) {
+          setData(result);
+        }
         const response2 = await fetch("/api/equipment");
         if (!response2.ok) {
           throw new Error("Failed to fetch data");
         }
         const result2 = await response2.json();
-        setEquipmentData(result2);
+        if (isMounted === true) {
+          setEquipmentData(result2);
+        }
       } catch (error) {
         console.error(error);
       } finally {
-        setIsLoading(false);
+        if (isMounted === true) {
+          setIsLoading(false);
+        }
+        
       }
     };
 
     fetchData();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Filter the data based on the dropdown selections and date range

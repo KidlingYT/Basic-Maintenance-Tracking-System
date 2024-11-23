@@ -2,37 +2,37 @@
 import dynamic from "next/dynamic";
 const MaintenanceBarGraph = dynamic(
   () => import("@/components/charts/MaintenanceBarGraph"), 
-  {
-    loading: () => 
-  <div>
-    <div className="animate-spin inline-block size-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full dark:text-blue-500" role="status" aria-label="loading">
-      <span className="sr-only">Loading...</span>
-    </div>
-  </div>,
+  { ssr: false, 
+    loading: () => (
+      <div className="animate-spin inline-block size-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full dark:text-blue-500" role="status" aria-label="loading">
+        <span className="sr-only">Loading...</span>
+      </div>
+    ) 
   }
 );
+
 const EquipmentPieChart = dynamic(
   () => import("@/components/charts/EquipmentPieChart"), 
-  {
-    loading: () => 
-  <div>
-    <div className="animate-spin inline-block size-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full dark:text-blue-500" role="status" aria-label="loading">
-      <span className="sr-only">Loading...</span>
-    </div>
-  </div>,
+  { ssr: false, 
+    loading: () => (
+      <div className="animate-spin inline-block size-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full dark:text-blue-500" role="status" aria-label="loading">
+        <span className="sr-only">Loading...</span>
+      </div>
+    ) 
   }
 );
+
 const RecentMaintenance = dynamic(
   () => import("@/components/RecentMaintenance"), 
-  {
-    loading: () => 
-  <div>
-    <div className="animate-spin inline-block size-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full dark:text-blue-500" role="status" aria-label="loading">
-      <span className="sr-only">Loading...</span>
-    </div>
-  </div>,
+  { ssr: false, 
+    loading: () => (
+      <div className="animate-spin inline-block size-6 border-[3px] border-current border-t-transparent text-blue-600 rounded-full dark:text-blue-500" role="status" aria-label="loading">
+        <span className="sr-only">Loading...</span>
+      </div>
+    ) 
   }
 );
+
 import SideBarLinks from "@/components/SideBarLinks";
 
 export default function Home() {
